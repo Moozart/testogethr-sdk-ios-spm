@@ -13,7 +13,7 @@ let package = Package(
         .binaryTarget(
             name: "TestogethrSdk",
             url: "https://github.com/Moozart/testogethr-sdk-ios-spm/releases/download/v0.1.0/TestogethrSdk.xcframework.zip",
-            checksum: "da2ff8771fd8bb16a253965da6b67833076b7bb4b83c662660e2f5d3de89b801"
+            checksum: "5cde62d2169ff6d957db666c3a28c2f75fff7539ac082a2c5bdf93e92f9b625a"
         )
     ]
 )
