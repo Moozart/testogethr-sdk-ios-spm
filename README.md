@@ -1,31 +1,133 @@
 # Testogethr iOS SDK (Swift Package)
 
-Public SwiftPM distribution repository for Testogethr iOS SDK binary releases.
+[![GitHub stars](https://img.shields.io/github/stars/Moozart/testogethr-sdk-ios-spm?style=social)](https://github.com/Moozart/testogethr-sdk-ios-spm/stargazers)
+[![Latest release](https://img.shields.io/github/v/release/Moozart/testogethr-sdk-ios-spm?display_name=tag&sort=semver)](https://github.com/Moozart/testogethr-sdk-ios-spm/releases/latest)
 
-This repository does not contain SDK source code. It only contains Swift Package metadata and release assets.
+Public Swift Package Manager repository for Testogethr iOS SDK binary distribution.
 
-## Add package in Xcode
+## Repository Scope
 
-Use this URL:
+This repository is for:
+
+- Swift package manifest (`Package.swift`)
+- Binary XCFramework release asset hosting
+- Public iOS version tags and release notes
+
+This repository does **not** include Testogethr SDK source code. SDK source remains private.
+
+## Quick Links
+
+- Latest iOS release: <https://github.com/Moozart/testogethr-sdk-ios-spm/releases/latest>
+- Android showcase repo: <https://github.com/Moozart/testogethr-sdk-android>
+- Android+iOS integration guides: <https://github.com/Moozart/testogethr-sdk-android/tree/main/docs>
+
+## SDK Access Token (Required)
+
+You must generate the SDK access token from the **Testogethr mobile app**:
+
+1. Open Testogethr app
+2. Go to **Profile**
+3. Open **API Key Manager**
+4. Generate and copy your SDK token
+
+> Critical: SDK initialization will fail without a valid token from **Profile -> API Key Manager**.
+
+## Download Testogethr App
+
+- Android (Google Play): <https://play.google.com/store/apps/details?id=com.testogethr.app>
+- iOS (App Store): <https://apps.apple.com/>
+
+## Install with Swift Package Manager
+
+### Option A: Add package in Xcode
+
+1. In Xcode, open **File -> Add Package Dependencies...**
+2. Enter:
 
 `https://github.com/Moozart/testogethr-sdk-ios-spm`
 
-Then choose the version you want (for example `0.1.0`).
+3. Select your version rule (recommended: **Up to Next Major**)
+4. Add product: `TestogethrSdk`
 
-## How releases work
+### Option B: Add in `Package.swift`
 
-Each SDK version includes:
+```swift
+.package(url: "https://github.com/Moozart/testogethr-sdk-ios-spm", from: "0.1.0")
+```
 
-- `Package.swift` update
-- Git tag (for example `v0.1.0`)
-- Release asset: `TestogethrSdk.xcframework.zip`
+Then link product:
 
-The package points to the release asset URL and checksum.
+```swift
+.product(name: "TestogethrSdk", package: "testogethr-sdk-ios-spm")
+```
 
-Note: this repository can contain placeholder values before the first public binary release is published.
+## iOS Integration Quick Start
+
+### 1) Initialize SDK
+
+Initialize as early as possible in your app lifecycle.
+
+```swift
+import TestogethrSdk
+
+TestogethrSdkCompanion.shared.initialize(
+    sdkAccessToken: "YOUR_SDK_ACCESS_TOKEN",
+    config: TestogethrConfig(),
+    debugLogger: { level, tag, message, throwable in
+        if let throwable {
+            print("[\(level)] \(tag): \(message) \(throwable)")
+        } else {
+            print("[\(level)] \(tag): \(message)")
+        }
+    }
+)
+```
+
+### 2) Start session from deep link
+
+When Testogethr opens your app, read `sessionToken` and call `startSession`.
+
+```swift
+.onOpenURL { url in
+    if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+       let token = components.queryItems?.first(where: { $0.name == "sessionToken" })?.value,
+       !token.isEmpty {
+        TestogethrSdkCompanion.shared.get().startSession(sessionToken: token)
+    }
+}
+```
+
+### 3) Register schema
+
+```swift
+let bossEvent = DeclaredEvent(
+    name: "boss_defeated",
+    description: "Fired when the final alien boss is beaten"
+)
+
+TestogethrSdkCompanion.shared.get().registerSchema(
+    isDiscoveryMode: true,
+    events: [bossEvent]
+)
+```
+
+### 4) Track events
+
+```swift
+TestogethrSdkCompanion.shared.get().trackEvent(event: bossEvent)
+```
+
+## Release Packaging Notes
+
+For each new iOS SDK release:
+
+1. Upload `TestogethrSdk.xcframework.zip` to GitHub Release assets
+2. Compute checksum with `swift package compute-checksum`
+3. Update `Package.swift` URL + checksum
+4. Create tag `vMAJOR.MINOR.PATCH`
+5. Publish release notes
 
 ## Support
 
-For integration docs, see:
-
-- https://github.com/Moozart/testogethr-sdk-docs
+- Integration questions: <https://github.com/Moozart/testogethr-sdk-android/issues>
+- iOS package/release issues: <https://github.com/Moozart/testogethr-sdk-ios-spm/issues>
