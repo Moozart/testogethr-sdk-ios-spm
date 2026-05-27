@@ -52,8 +52,10 @@ You must generate the SDK access token from the **Testogethr mobile app**:
 ### Option B: Add in `Package.swift`
 
 ```swift
-.package(url: "https://github.com/Moozart/testogethr-sdk-ios-spm", from: "0.1.0")
+.package(url: "https://github.com/Moozart/testogethr-sdk-ios-spm", from: "<version>")
 ```
+
+Replace `<version>` with the latest stable tag shown in the **Latest release** badge above.
 
 Then link product:
 
