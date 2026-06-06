@@ -91,16 +91,24 @@ Then link product:
 
 ## iOS Integration Quick Start
 
-### 1) Initialize SDK
+### 1) Declare events and initialize SDK
 
-Initialize as early as possible in your app lifecycle.
+Initialize as early as possible in your app lifecycle. Declare your events
+up front and pass them via `steps`.
 
 ```swift
 import TestogethrSdk
 
+let bossEvent = DeclaredEvent(
+    name: "boss_defeated",
+    description: "Fired when the final alien boss is beaten"
+)
+
 TestogethrSdkCompanion.shared.initialize(
     sdkAccessToken: "YOUR_SDK_ACCESS_TOKEN",
     config: TestogethrConfig(),
+    steps: [bossEvent],
+    isDiscoveryMode: true,
     debugLogger: { level, tag, message, throwable in
         if let throwable {
             print("[\(level)] \(tag): \(message) \(throwable)")
@@ -113,36 +121,25 @@ TestogethrSdkCompanion.shared.initialize(
 
 ### 2) Start session from deep link
 
-When Testogethr opens your app, read `sessionToken` and call `startSession`.
+When Testogethr opens your app, pass the URL to the SDK. It parses the
+`sessionToken` query parameter and starts the session when present.
 
 ```swift
 .onOpenURL { url in
-    if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-       let token = components.queryItems?.first(where: { $0.name == "sessionToken" })?.value,
-       !token.isEmpty {
-        TestogethrSdkCompanion.shared.get().startSession(sessionToken: token)
-    }
+    _ = TestogethrSdkCompanion.shared.get().handleDeepLink(url: url.absoluteString)
 }
 ```
 
-### 3) Register schema
+### 3) Send events
 
 ```swift
-let bossEvent = DeclaredEvent(
-    name: "boss_defeated",
-    description: "Fired when the final alien boss is beaten"
-)
-
-TestogethrSdkCompanion.shared.get().registerSchema(
-    isDiscoveryMode: true,
-    events: [bossEvent]
-)
+TestogethrSdkCompanion.shared.get().sendEvent(event: bossEvent)
 ```
 
-### 4) Track events
+You can also send by name:
 
 ```swift
-TestogethrSdkCompanion.shared.get().trackEvent(event: bossEvent)
+TestogethrSdkCompanion.shared.get().sendEvent(eventName: "boss_defeated")
 ```
 
 ## Release Packaging Notes
